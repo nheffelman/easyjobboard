@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+	<title></title>
+	<link href="/stylesheets/style.css" rel="stylesheet" type="text/css">
+</head>
+
+	<body>
+	    <div class = "header">
+		<a href="/" class="main-title">
+	      Meg's Wiki
+	    </a>
+	   
+		   
+		   <div class=login-area>
+			   {% if loggedin %}
+			   <a href="{{path}}" class="login-link"> view </a> | <a href="{{historypath}}" class="login-link"> history </a>| {{username}} <a href="/logout" class="login-link">(logout)</a>
+			   {% else %}
+			   <a href="/signup" class="login-link"> sign-up </a>|<a href="/login" class="login-link"> login </a>
+			   {% endif %}
+		   </div>
+		</div>
+		
+		
+		<h2>You are editing page: {{path}}</h2>	
+		<div class="main-edit">
+		<form method = "post">
+			
+			<label>
+				<div>Content</div>
+				<textarea name="content">{{c.content}}</textarea>
+			</label>
+		
+			<input type ="submit">
+		
+		</form>
+		</div>
+	</body>
+</html>

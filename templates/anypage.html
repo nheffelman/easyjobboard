@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+	<title>Meg's Wiki</title>
+	<link href="/stylesheets/style.css" rel="stylesheet" type="text/css">
+</head>
+
+	<body>
+    <a href="/" class="main-title">
+      Meg's Wiki
+    </a>
+	   
+	   <div class=login-area>
+		   {% if loggedin %}
+		   <a href="{{editpath}}" class="login-link"> edit </a> | <a href="{{historypath}}" class="login-link">history</a> |  {{username}} <a href="/logout" class="login-link">(logout)</a>
+		   {% else %}
+		   <a href="/signup" class="login-link"> sign-up </a>|<a href="/login" class="login-link"> login </a>
+		   {% endif %}
+	   </div>   
+	   
+	   <div>{{c.content}}</div>
+	
+	</body>
+</html>

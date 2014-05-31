@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+	<title>Meg's Wiki</title>
+	<link href="/stylesheets/style.css" rel="stylesheet" type="text/css">
+</head>
+
+	<body>
+    <a href="/" class="main-title">
+      Meg's Wiki
+    </a>
+	   
+	   <div class=login-area>
+		   {% if loggedin %}
+		   {{username}} <a href="/logout" class="login-link">(logout)</a>
+		   {% else %}
+		   <a href="/signup" class="login-link"> sign-up </a>|<a href="/login" class="login-link"> login </a>
+		   {% endif %}
+	   </div>   
+	   
+	   <center>
+	   <div>
+		   <table class="history-table">
+			   <tr>
+				   <th>Date</th>
+				   <th>Content</th>
+				   <th>View</th>
+				   <th>Edit</th>
+		   </tr>
+		   {% for c in contents  %}
+		   		<tr>
+					<td>{{ c.last_modified.strftime("%c") }}</td>
+					<td>{{ c.content }}</td>
+					<td><a href="{{path}}?v={{c.key().id()}}" class="link">view</a></td>
+					<td><a href="/_edit{{path}}?v={{c.key().id()}}" class="link">edit</a></td>
+				</tr>
+		   {% endfor %}
+	   </table>
+	   </div>
+   </center>
+	
+	</body>
+</html>
