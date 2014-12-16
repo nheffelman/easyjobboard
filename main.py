@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Meg's final project for Udacity Web Development course
+# CCC project for superintendents
 #
 import webapp2
 import os
