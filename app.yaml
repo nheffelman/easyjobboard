@@ -14,11 +14,16 @@ handlers:
 - url: /img
   static_dir: images
 
+- url: /bootstrap-prestructure_files
+  static_dir: bootstrap-prestructure_files
+
 - url: /stylesheets/
   static_dir: stylesheets 
+
 - url: /favicon\.ico
   static_files: favicon.ico
   upload: favicon\.ico
+
 - url: /.*
   script: main.app
 
