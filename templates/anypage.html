@@ -48,40 +48,23 @@
             
             
             
-            	<div class="row">
-            	    <div class="col-md-12">
-            	        <h2 class="text-muted">Assignments</h2>
-            	    </div>
-            	</div>
-            	<div class="row">
-            	    <div class="col-md-12">
-            	        <h2>Juvenal Ramirez</h2>
-            	    </div>
+            	
             	<div class="row text-center">
-                
-            	    <div class="col-md-4">
-            	        <textarea class="img-responsive" class="assignment-text">{{c.content}}</textarea>
-                    
-            	    </div>
-            	    {% block content %}
-
-						{% for lines in c.content %} 
-							<div class="col-md-4">
-								<textarea class="img-responsive" class="assignment-text">{{c.content}}</textarea>
-                    
-							</div>
-						{% endfor %}
-      
-					{% endblock %}
-            	    <div class="col-md-4">
-            	        <img class="img-responsive" src="bootstrap-prestructure_files/555x300" data-toggle="modal" data-target="#project1">
-                    
-            	    </div>
-            	    <div class="col-md-4">
-            	        <img class="img-responsive" src="bootstrap-prestructure_files/555x300">
-                    
-            	    </div>
-            	</div>
+					<H2>Assignments</H2>
+					
+            	    
+            	        <textarea class="assignment-text">{{c.content}}</textarea>
+						
+            	</div>  
+            	    
+            	    
+				<form class="text-center form-inline">
+						<button class="btn btn-large btn-primary" type="button"><a href="{{yesterday}}">Yesterday</a></button>
+						<input type="text" class="input-small" placeholder="{{date}}" name="d">
+						<button class="btn btn-large btn-primary" type="button"><a href="{{tomorrow}}">Tomorrow</a></button>     	    
+            	</form>
+            	    
+            	
 
            
         	

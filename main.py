@@ -13,6 +13,8 @@ import hashlib
 import json
 import logging
 import time
+import datetime
+from datetime import timedelta
 
 from google.appengine.api import memcache
 from google.appengine.ext import db
@@ -286,7 +288,30 @@ class WikiPageHandler(Handler):
         loggedin = username
         editpath = "/_edit" + path
         historypath = "/_history" + path
-        self.render("anypage.html", c=c, loggedin=loggedin, username=username, editpath=editpath, historypath=historypath)
+        dt = datetime.datetime.now()
+        date = dt.strftime("%y-%m-%d")
+        year = int(path[1:5])
+        month = int(path[6:8])
+        day = int(path[9:11])
+        
+        ##date = "2015-13-1"
+        logging.error("year: " + str(year) + " month: " + str(month) + " day: " + str(day))
+        today = datetime.date(year,month,day)
+        today -= datetime.timedelta(days=1)
+        yesterday = today
+        today += datetime.timedelta(days=2)
+        tomorrow = today
+        today -= datetime.timedelta(days=1)
+        logging.error("today: %s" % (today))
+        logging.error("tomorrow: %s" % (tomorrow))
+        logging.error("yesterday: %s" % (yesterday))
+        date = today.strftime("%y-%m-%d")
+        logging.error("paty: %s" % (path))
+        yesterday_ref = "/" + yesterday.strftime("%Y-%m-%d")
+        tomorrow_ref = "/" + tomorrow.strftime("%Y-%m-%d")
+        self.render("anypage.html", c=c, loggedin=loggedin, username=username, 
+					editpath=editpath, historypath=historypath, date = date,
+					yesterday = yesterday_ref, tomorrow = tomorrow_ref)
     
     def edit_page(self, path):
         editpath = "/_edit" + path
@@ -310,13 +335,13 @@ class WikiPageHandler(Handler):
         else:
             logging.error("There is no v: "+ str(v))
             c=Content.by_path(path).get() #get returns one, fetch would return the list
-    
+		
         if c:
             logging.error("The value of c is: "+ str(c))
             self.display_page(path, c)
         else: 
             self.edit_page(path)
-
+	
 #HistoryHandler class
 class HistoryPageHandler(Handler):
     def display_page(self, path, contents):
