@@ -40,8 +40,8 @@
                         <h1>sunny</h1>
                     </div>
                     <div class="col-md-3 text-center">
-                        <h1 class="title-super text-thin text-uppercase">Friday</h1>
-                        <h1>Dec 12</h1>
+                        <h1 class="title-super text-thin text-uppercase">{{weekday}}</h1>
+                        <h1>{{month}} {{day}}</h1>
                     </div>
                     <div class="col-md-1"><img src="bootstrap-prestructure_files/100x100"></div>
                 </div>
@@ -58,11 +58,11 @@
             	</div>  
             	    
             	    
-				<form class="text-center form-inline">
+				<div class="text-center form-inline">
 						<button class="btn btn-large btn-primary" type="button"><a href="{{yesterday}}">Yesterday</a></button>
-						<input type="text" class="input-small" placeholder="{{date}}" name="d">
+						
 						<button class="btn btn-large btn-primary" type="button"><a href="{{tomorrow}}">Tomorrow</a></button>     	    
-            	</form>
+            	</div>
             	    
             	
 

@@ -309,9 +309,16 @@ class WikiPageHandler(Handler):
         logging.error("paty: %s" % (path))
         yesterday_ref = "/" + yesterday.strftime("%Y-%m-%d")
         tomorrow_ref = "/" + tomorrow.strftime("%Y-%m-%d")
+        weekday = today.strftime("%A")
+        logging.error("weekday: %s" % weekday)
+        month = today.strftime("%b")
+        logging.error("month: %s" % month)
+        day = today.strftime("%d")
+        logging.error("day: %s" % day)
         self.render("anypage.html", c=c, loggedin=loggedin, username=username, 
 					editpath=editpath, historypath=historypath, date = date,
-					yesterday = yesterday_ref, tomorrow = tomorrow_ref)
+					yesterday = yesterday_ref, tomorrow = tomorrow_ref, weekday = weekday,
+					month = month, day = day)
     
     def edit_page(self, path):
         editpath = "/_edit" + path
