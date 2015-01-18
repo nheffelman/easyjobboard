@@ -1,4 +1,4 @@
-application: ccc
+application: easyjobboard
 version: 1
 runtime: python27
 api_version: 1
@@ -13,8 +13,8 @@ handlers:
 
 - url: /img
   static_dir: images
-  
-  - url: /fonts
+    
+- url: /fonts
   static_dir: fonts
 
 - url: /bootstrap-prestructure_files

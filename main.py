@@ -46,7 +46,34 @@ class Handler(webapp2.RequestHandler):
     def notfound(self):
         self.error(404)
         self.write('<h1>404: Not Found</h1> Sorry! The page you are looking for does not exist.')
-
+        
+#for getting date info from the path
+def getinfo(path):
+	year = int(path[1:5])
+	month = int(path[6:8])
+	day = int(path[9:11])
+	logging.error("year: " + str(year) + " month: " + str(month) + " day: " + str(day))
+	today = datetime.date(year,month,day)
+	today -= datetime.timedelta(days=1)
+	yesterday = today
+	today += datetime.timedelta(days=2)
+	tomorrow = today
+	today -= datetime.timedelta(days=1)
+	logging.error("today: %s" % (today))
+	logging.error("tomorrow: %s" % (tomorrow))
+	logging.error("yesterday: %s" % (yesterday))
+	date = today.strftime("%y-%m-%d")
+	logging.error("paty: %s" % (path))
+	yesterday_ref = "/" + yesterday.strftime("%Y-%m-%d")
+	tomorrow_ref = "/" + tomorrow.strftime("%Y-%m-%d")
+	weekday = today.strftime("%A")
+	logging.error("weekday: %s" % weekday)
+	month = today.strftime("%b")
+	logging.error("month: %s" % month)
+	day = today.strftime("%d")
+	logging.error("day: %s" % day)
+	return yesterday_ref, tomorrow_ref, weekday, month, day
+		
 #for hashing usernames and passwords
 def make_salt():
     return ''.join(random.choice(string.letters) for x in xrange(5))
@@ -288,37 +315,11 @@ class WikiPageHandler(Handler):
         loggedin = username
         editpath = "/_edit" + path
         historypath = "/_history" + path
-        dt = datetime.datetime.now()
-        date = dt.strftime("%y-%m-%d")
-        year = int(path[1:5])
-        month = int(path[6:8])
-        day = int(path[9:11])
-        
-        ##date = "2015-13-1"
-        logging.error("year: " + str(year) + " month: " + str(month) + " day: " + str(day))
-        today = datetime.date(year,month,day)
-        today -= datetime.timedelta(days=1)
-        yesterday = today
-        today += datetime.timedelta(days=2)
-        tomorrow = today
-        today -= datetime.timedelta(days=1)
-        logging.error("today: %s" % (today))
-        logging.error("tomorrow: %s" % (tomorrow))
-        logging.error("yesterday: %s" % (yesterday))
-        date = today.strftime("%y-%m-%d")
-        logging.error("paty: %s" % (path))
-        yesterday_ref = "/" + yesterday.strftime("%Y-%m-%d")
-        tomorrow_ref = "/" + tomorrow.strftime("%Y-%m-%d")
-        weekday = today.strftime("%A")
-        logging.error("weekday: %s" % weekday)
-        month = today.strftime("%b")
-        logging.error("month: %s" % month)
-        day = today.strftime("%d")
-        logging.error("day: %s" % day)
+        yesterday_ref, tomorrow_ref, weekday, month, day = getinfo(path)
+		        
         self.render("anypage.html", c=c, loggedin=loggedin, username=username, 
-					editpath=editpath, historypath=historypath, date = date,
-					yesterday = yesterday_ref, tomorrow = tomorrow_ref, weekday = weekday,
-					month = month, day = day)
+					editpath=editpath, historypath=historypath, yesterday = yesterday_ref, 
+					tomorrow = tomorrow_ref, weekday = weekday, month = month, day = day)
     
     def edit_page(self, path):
         editpath = "/_edit" + path
