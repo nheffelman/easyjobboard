@@ -49,9 +49,9 @@ class Handler(webapp2.RequestHandler):
         
 #for getting date info from the path
 def getinfo(path):
-	year = int(path[1:5])
-	month = int(path[6:8])
-	day = int(path[9:11])
+	year = int(path[0:4])
+	month = int(path[5:7])
+	day = int(path[8:10])
 	logging.error("year: " + str(year) + " month: " + str(month) + " day: " + str(day))
 	today = datetime.date(year,month,day)
 	today -= datetime.timedelta(days=1)
@@ -73,6 +73,19 @@ def getinfo(path):
 	day = today.strftime("%d")
 	logging.error("day: %s" % day)
 	return yesterday_ref, tomorrow_ref, weekday, month, day
+
+def getdate():
+	day = datetime.date.today()
+	today = day.strftime("%Y-%m-%d")
+	return today
+	
+# for figuring out the path and date
+def findlast(s):
+	#old_string = "this is going to have a full stop. some written sstuff!"
+	k = s.rfind("/")
+	path = s[:k] 
+	date = s[k+1:]
+	return date, path
 		
 #for hashing usernames and passwords
 def make_salt():
@@ -99,14 +112,16 @@ class UserStore(db.Model):
 
 #signup membership form            
 class SignUpHandler(Handler):
-    def write_form(self, username="", error_un="", password="", error_pw="", verify="", error_v="", email="", error_e=""):
+    def write_form(self, username="", error_un="", password="", error_pw="", verify="", error_v="", email="", error_e="", organization="", error_o=""):
         self.render("signup.html", username=cgi.escape(username, quote=True), error_un=error_un,
             password=cgi.escape(password, quote=True),
             error_pw=error_pw,
             verify=cgi.escape(verify, quote=True),
             error_v=error_v,
             email=cgi.escape(email, quote=True),
-            error_e=error_e)    
+            error_e=error_e,
+	    organization=cgi.escape(organization, quote="True"),
+	    error_o=error_o)    
         
     def get(self):
         self.write_form()
@@ -116,12 +131,14 @@ class SignUpHandler(Handler):
         error_pw = ""
         error_v = ""
         error_e = ""
+	error_o = ""
         valid_u = valid_username(self.request.get('username'))
         user_duplicat = dupuser(self.request.get('username'))
         valid_p = valid_password(self.request.get('password'))
         valid_v = valid_verify(self.request.get('password'), self.request.get('verify'))
         valid_e = valid_email(self.request.get('email'))
-
+	valid_o = valid_organization(self.request.get('organization'))	
+	
         if not (valid_u):
             error_un = "Invalid Username"
         
@@ -133,6 +150,9 @@ class SignUpHandler(Handler):
         
         if not (valid_e):
             error_e = "Invalid Email"
+
+	if not (valid_o):
+	    error_e = "Invalid Organization Name"
         
         if not (user_duplicat):
             error_un = "That username already exists. Please pick another user name."
@@ -141,21 +161,28 @@ class SignUpHandler(Handler):
             self.write_form(self.request.get('username'), error_un,
             self.request.get('password'), error_pw,
             self.request.get('verify'), error_v,
-            self.request.get('email'), error_e)
+            self.request.get('email'), error_e,
+	    self.request.get('organization'), error_o)
         
         else: 
+	    today = getdate()
             u_name = self.request.get('username')
             u_pw = self.request.get('password')
             u_email = self.request.get('email')
+	    u_organization = self.request.get('organization')
             u_hash = make_pw_hash(u_name, u_pw)
             u = UserStore(username=u_name, mail=u_email, unpwhash=u_hash)
             u_key = u.put()
             self.response.headers.add_header('Set-Cookie', 'username=%s; Path=/' %str(u_name))
             self.response.headers.add_header('Set-Cookie', 'valid=%s; Path=/' %str(u_hash))
-            self.redirect("/")
+	    logging.error('the value or organization: ' + str(u_organization))
+            self.redirect('/%s/%s/%s' %(str(u_organization), str(u_name), str(today)))
         
 #functions for validating signup input
 USER_RE = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
+def valid_organization(organization):
+    return USER_RE.match(organization)
+
 def valid_username(username):
     return USER_RE.match(username)
     
@@ -315,9 +342,13 @@ class WikiPageHandler(Handler):
         loggedin = username
         editpath = "/_edit" + path
         historypath = "/_history" + path
-        yesterday_ref, tomorrow_ref, weekday, month, day = getinfo(path)
+        end, rest = findlast(path)
+        logging.error(end)
+        
+			
+        yesterday_ref, tomorrow_ref, weekday, month, day = getinfo(end)
 		        
-        self.render("anypage.html", c=c, loggedin=loggedin, username=username, 
+        self.render('anypage.html', c=c, loggedin=loggedin, username=username, 
 					editpath=editpath, historypath=historypath, yesterday = yesterday_ref, 
 					tomorrow = tomorrow_ref, weekday = weekday, month = month, day = day)
     
@@ -330,6 +361,7 @@ class WikiPageHandler(Handler):
             self.redirect("/login")
         
         v = self.request.get('v')
+        
         c = None
         if v:
             if v.isdigit():
@@ -373,11 +405,51 @@ class HistoryPageHandler(Handler):
         else: 
             self.edit_page(path)
 
+#handler for dates and groups
+class DateHandler(Handler):
+	def display_page(self, path, c):
+		username = self.get_login()
+		loggedin = username
+		editpath = "/_edit" + path
+		historypath = "/_history" + path
+		
+		self.render("anypage.html", c=c, loggedin=loggedin, username=username, 
+					editpath=editpath, historypath=historypath)
+					
+	def edit_page(self, path):
+		editpath = "/_edit" + path
+		self.redirect("%s" % editpath)
+	
+	def get(self, group, year, month, day):
+			path = group + '/' + year + '/' + month + '/' +day
+			if not self.get_login():
+				self.redirect("/login")
+			v = self.request.get('v')
+			user =  self.get_login()
+			c = None
+			if v:
+				if v.isdigit():
+					logging.error("V is a digit. The value of v is: "+ str(v))
+					c = Content.by_id(int(v), path)
+				else:
+					logging.error("V is NOT a digit. The value of v is: "+ str(v))
+				if not c:
+					return self.notfound()
+			else:
+				logging.error("There is no v: "+ str(v))
+				c=Content.by_path(path).get() #get returns one, fetch would return the list
+			if c:
+				logging.error("The value of c is: "+ str(c))
+				self.display_page(path, c)
+			else:
+				self.edit_page(path)
+		
 
 #Path Handlers
 PAGE_RE = r'(/(?:[a-zA-Z0-9_-]+/?)*)'
 
 app = webapp2.WSGIApplication([('/', HomeHandler), ('/signup', SignUpHandler), ('/login', LoginHandler), 
 ('/logout', LogoutHandler), ('/_edit' + PAGE_RE, EditPageHandler), ('/_history' + PAGE_RE, HistoryPageHandler), 
+#webapp2.Route('/<group>/<year:\d{4}>/<month:\d{2}>/<day:\d{2}>', handler=DateHandler),
 (PAGE_RE, WikiPageHandler)
 ], debug=True)
