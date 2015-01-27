@@ -55,14 +55,23 @@ input[type=password] {
 .assignment-text {
   width: 555px;
   height: 300px;
-  font-size: 17px
+  font-size: 25px
   font-family: monospace;
+  border: none;
+  overflow: auto;
+  outline: none;
+
+  -webkit-box-shadow: none;
+  -moz-box-shadow: none;
+  box-shadow: none;
+}
 
 textarea {
   width: 500px;
   height: 400px;
-  font-size: 17px;
-  font-family: monospace;
+  font-size: 25px;
+  font-weight: 200;
+  font-family: 'Lato', sans-serif;
 }
 
 input[type=submit] {

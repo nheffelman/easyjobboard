@@ -48,7 +48,7 @@ class Handler(webapp2.RequestHandler):
         self.write('<h1>404: Not Found</h1> Sorry! The page you are looking for does not exist.')
         
 #for getting date info from the path
-def getinfo(path):
+def getinfo(organization, path):
 	year = int(path[0:4])
 	month = int(path[5:7])
 	day = int(path[8:10])
@@ -64,8 +64,8 @@ def getinfo(path):
 	logging.error("yesterday: %s" % (yesterday))
 	date = today.strftime("%y-%m-%d")
 	logging.error("paty: %s" % (path))
-	yesterday_ref = "/" + yesterday.strftime("%Y-%m-%d")
-	tomorrow_ref = "/" + tomorrow.strftime("%Y-%m-%d")
+	yesterday_ref = organization + "/" + yesterday.strftime("%Y-%m-%d")
+	tomorrow_ref = organization + "/" + tomorrow.strftime("%Y-%m-%d")
 	weekday = today.strftime("%A")
 	logging.error("weekday: %s" % weekday)
 	month = today.strftime("%b")
@@ -224,6 +224,8 @@ class LoginHandler(Handler):
         check_user = UserStore.all()
         check_user.filter("username", username)
         result = check_user.get()
+        organization = result.organization
+        today = getdate()
         
         if result==None:
             error = "Username does not exist"
@@ -240,7 +242,7 @@ class LoginHandler(Handler):
             else:
                 self.response.headers.add_header('Set-Cookie', 'username=%s; Path=/' %str(username))
                 self.response.headers.add_header('Set-Cookie', 'valid=%s; Path=/' %str(saltyhash))
-                self.redirect("/")
+                self.redirect('/%s/%s' %(str(organization), str(today)))
 
 #LogoutHandler class
 class LogoutHandler(Handler):
@@ -348,7 +350,9 @@ class WikiPageHandler(Handler):
         logging.error(end)
         
 			
-        yesterday_ref, tomorrow_ref, weekday, month, day = getinfo(end)
+        yesterday_ref, tomorrow_ref, weekday, month, day = getinfo(rest, end)
+        
+        logging.error(" %s" % c.content)
 		        
         self.render('anypage.html', organization=organization, c=c, loggedin=loggedin, username=username, 
 					editpath=editpath, historypath=historypath, yesterday = yesterday_ref, 
