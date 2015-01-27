@@ -85,7 +85,8 @@ def findlast(s):
 	k = s.rfind("/")
 	path = s[:k] 
 	date = s[k+1:]
-	return date, path
+	org = s[1:k]
+	return org, date, path
 		
 #for hashing usernames and passwords
 def make_salt():
@@ -106,6 +107,7 @@ def valid_pw(name, pw, h):
 class UserStore(db.Model):
     username = db.StringProperty(required=True)
     mail = db.StringProperty()
+    organization = db.StringProperty(required = True)
     unpwhash = db.StringProperty(required = True)
     created = db.DateTimeProperty(auto_now_add = True)
     last_modified = db.DateTimeProperty(auto_now = True)
@@ -171,12 +173,12 @@ class SignUpHandler(Handler):
             u_email = self.request.get('email')
 	    u_organization = self.request.get('organization')
             u_hash = make_pw_hash(u_name, u_pw)
-            u = UserStore(username=u_name, mail=u_email, unpwhash=u_hash)
+            u = UserStore(username=u_name, mail=u_email, unpwhash=u_hash, organization=u_organization)
             u_key = u.put()
             self.response.headers.add_header('Set-Cookie', 'username=%s; Path=/' %str(u_name))
             self.response.headers.add_header('Set-Cookie', 'valid=%s; Path=/' %str(u_hash))
 	    logging.error('the value or organization: ' + str(u_organization))
-            self.redirect('/%s/%s/%s' %(str(u_organization), str(u_name), str(today)))
+            self.redirect('/%s/%s' %(str(u_organization), str(today)))
         
 #functions for validating signup input
 USER_RE = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
@@ -342,13 +344,13 @@ class WikiPageHandler(Handler):
         loggedin = username
         editpath = "/_edit" + path
         historypath = "/_history" + path
-        end, rest = findlast(path)
+        organization, end, rest = findlast(path)
         logging.error(end)
         
 			
         yesterday_ref, tomorrow_ref, weekday, month, day = getinfo(end)
 		        
-        self.render('anypage.html', c=c, loggedin=loggedin, username=username, 
+        self.render('anypage.html', organization=organization, c=c, loggedin=loggedin, username=username, 
 					editpath=editpath, historypath=historypath, yesterday = yesterday_ref, 
 					tomorrow = tomorrow_ref, weekday = weekday, month = month, day = day)
     
