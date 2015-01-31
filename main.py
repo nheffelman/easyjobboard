@@ -42,6 +42,12 @@ class Handler(webapp2.RequestHandler):
             return None
         else:
             return user_cookie_val
+    def get_organization(self):
+        organization_cookie_val = self.request.cookies.get('organization')
+        if not organization_cookie_val:
+            return None
+        else:
+            return organization_cookie_val
             
     def notfound(self):
         self.error(404)
@@ -171,12 +177,14 @@ class SignUpHandler(Handler):
             u_name = self.request.get('username')
             u_pw = self.request.get('password')
             u_email = self.request.get('email')
-	    u_organization = self.request.get('organization')
+            u_organization = self.request.get('organization')
+            u_organization = u_organization.replace(' ', '_')
             u_hash = make_pw_hash(u_name, u_pw)
             u = UserStore(username=u_name, mail=u_email, unpwhash=u_hash, organization=u_organization)
             u_key = u.put()
             self.response.headers.add_header('Set-Cookie', 'username=%s; Path=/' %str(u_name))
             self.response.headers.add_header('Set-Cookie', 'valid=%s; Path=/' %str(u_hash))
+            self.response.headers.add_header('Set-Cookie', 'organization=%s; Path=/' %str(u_organization))
 	    logging.error('the value or organization: ' + str(u_organization))
             self.redirect('/%s/%s' %(str(u_organization), str(today)))
         
@@ -279,21 +287,17 @@ class HomeHandler(Handler):
     def get(self):
         username = self.get_login()
         loggedin = username
-        path = "/"
-        v = self.request.get('v')
-        c = None
-        if v:
-            if v.isdigit():
-                c = Content.by_id(int(v), path)
-            
-            if not c:
-                return self.notfound()
+        organization = self.get_organization()
+        if username:
+			today = getdate()
+			logging.error('not log in %s' % loggedin)
+			self.redirect('/%s/%s' %(str(organization), str(today)))
         else:
-            c=Content.by_path(path).get() #get returns one, fetch would return the list
-    
-        editpath = "/_edit/"
-        historypath = "/_history/"
-        self.render("anypage.html", c=c, loggedin=loggedin, username=username, editpath=editpath, historypath=historypath)
+			self.render('home.html')
+			
+class AboutHandler(Handler):
+	def get(self):
+		self.render('about.html')
 
 
 #EditPageHandler class
@@ -353,7 +357,7 @@ class WikiPageHandler(Handler):
         yesterday_ref, tomorrow_ref, weekday, month, day = getinfo(rest, end)
         
         logging.error(" %s" % c.content)
-		        
+        organization = organization.replace('_', ' ')        
         self.render('anypage.html', organization=organization, c=c, loggedin=loggedin, username=username, 
 					editpath=editpath, historypath=historypath, yesterday = yesterday_ref, 
 					tomorrow = tomorrow_ref, weekday = weekday, month = month, day = day)
@@ -454,7 +458,7 @@ class DateHandler(Handler):
 #Path Handlers
 PAGE_RE = r'(/(?:[a-zA-Z0-9_-]+/?)*)'
 
-app = webapp2.WSGIApplication([('/', HomeHandler), ('/signup', SignUpHandler), ('/login', LoginHandler), 
+app = webapp2.WSGIApplication([('/', HomeHandler), ('/about', AboutHandler), ('/signup', SignUpHandler), ('/login', LoginHandler), 
 ('/logout', LogoutHandler), ('/_edit' + PAGE_RE, EditPageHandler), ('/_history' + PAGE_RE, HistoryPageHandler), 
 #webapp2.Route('/<group>/<year:\d{4}>/<month:\d{2}>/<day:\d{2}>', handler=DateHandler),
 (PAGE_RE, WikiPageHandler)
