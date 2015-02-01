@@ -14,18 +14,24 @@
 		   <div class=login-area>
 			   <a href="/signup" class="login-link"> sign-up </a>
 		   </div>
-<form method ="post">
-    <h2>Enter your information to login</h2>
-   
-   Your username:  <input type="text" name="username" value="{{ username }}">
-   <br>
-   
-   Your password: <input type="password" name="password" value="{{ password }}">
- 
- <div style="color: red">{{ error }}</div> 
- 
-    <input type="submit">
-</form>
 
+<form class="form-horizontal" method ="post">
+	
+	<div class="form-group">
+		<h2>Enter your information to Log In</h2>
+    </div>
+    <div class="form-group">
+		<label for="username1" class="col-sm-2 control-label">Your Username:</label>
+		<div class="col-sm-10">
+			<input type="text" class="form-control" name="username" value="{{ username }}">
+	</div>
+	<div class="form-group">
+		<label for="password1" class="col-sm-2 control-label">Your Password:</label>
+		<div class="col-sm-10">
+			<input type="password" class="form-control" name="password" value="{{ password }}">
+	</div>
+	<div style="color: red">{{ error }}</div>
+	<input type="submit">
+</form>
 	</body>
 </html>

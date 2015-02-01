@@ -382,6 +382,8 @@
     "forms.less",
     "buttons.less",
     "glyphicons.less",
+    "button-groups.less",
+    "input-groups.less",
     "jumbotron.less",
     "modals.less"
   ],
@@ -399,5 +401,5 @@
     "scrollspy.js",
     "transition.js"
   ],
-  "customizerUrl": "http://getbootstrap.com/customize/?id=b490c99b04b938410524"
+  "customizerUrl": "http://getbootstrap.com/customize/?id=69b18262e0545a9e15a8"
 }
