@@ -17,6 +17,7 @@ import datetime
 from datetime import timedelta
 
 from google.appengine.api import memcache
+from google.appengine.ext import ndb
 from google.appengine.ext import db
 
 
@@ -110,13 +111,13 @@ def valid_pw(name, pw, h):
     return make_pw_hash(name, pw, salty)==h
 
 #username and password +hash storage
-class UserStore(db.Model):
-    username = db.StringProperty(required=True)
-    mail = db.StringProperty()
-    organization = db.StringProperty(required = True)
-    unpwhash = db.StringProperty(required = True)
-    created = db.DateTimeProperty(auto_now_add = True)
-    last_modified = db.DateTimeProperty(auto_now = True)
+class User(ndb.Model):
+    username = ndb.StringProperty(required=True)
+    mail = ndb.StringProperty()
+    organization = ndb.StringProperty(required = True)
+    unpwhash = ndb.StringProperty(required = True)
+    created = ndb.DateTimeProperty(auto_now_add = True)
+    last_modified = ndb.DateTimeProperty(auto_now = True)
 
 #signup membership form            
 class SignUpHandler(Handler):
@@ -180,7 +181,7 @@ class SignUpHandler(Handler):
             u_organization = self.request.get('organization')
             u_organization = u_organization.replace(' ', '_')
             u_hash = make_pw_hash(u_name, u_pw)
-            u = UserStore(username=u_name, mail=u_email, unpwhash=u_hash, organization=u_organization)
+            u = User(username=u_name, mail=u_email, unpwhash=u_hash, organization=u_organization)
             u_key = u.put()
             self.response.headers.add_header('Set-Cookie', 'username=%s; Path=/' %str(u_name))
             self.response.headers.add_header('Set-Cookie', 'valid=%s; Path=/' %str(u_hash))
@@ -210,10 +211,9 @@ def valid_email(email):
     return blank or match
 
 def dupuser(username):
-    check_user = UserStore.all()
-    check_user.filter("username", username)
-    result = check_user.get()
-    return result==None        
+    q = User.query(User.username == username)
+    result = q.get()
+    return result==None
 
         
 #LoginHandler class
@@ -229,12 +229,9 @@ class LoginHandler(Handler):
         error = ""
         username = self.request.get('username')
         password = self.request.get('password')
-        check_user = UserStore.all()
-        check_user.filter("username", username)
+        check_user = User.query(User.username == username)
         result = check_user.get()
-        organization = result.organization
-        today = getdate()
-        
+                
         if result==None:
             error = "Username does not exist"
             self.write_form(username, password, error)
@@ -248,9 +245,11 @@ class LoginHandler(Handler):
                 self.write_form(username, password, error)
 
             else:
-                self.response.headers.add_header('Set-Cookie', 'username=%s; Path=/' %str(username))
-                self.response.headers.add_header('Set-Cookie', 'valid=%s; Path=/' %str(saltyhash))
-                self.redirect('/%s/%s' %(str(organization), str(today)))
+				today = getdate()
+				organization = result.organization
+				self.response.headers.add_header('Set-Cookie', 'username=%s; Path=/' %str(username))
+				self.response.headers.add_header('Set-Cookie', 'valid=%s; Path=/' %str(saltyhash))
+				self.redirect('/%s/%s' %(str(organization), str(today)))
 
 #LogoutHandler class
 class LogoutHandler(Handler):
@@ -259,23 +258,22 @@ class LogoutHandler(Handler):
         self.response.headers.add_header('Set-Cookie','valid=; Path=/')
         self.redirect('/login')
 
-
 #Content storage db
-class Content(db.Model):
-    path = db.StringProperty(required = True)
-    content = db.TextProperty(required = True)
-    created = db.DateTimeProperty(auto_now_add = True)
-    last_modified = db.DateTimeProperty(auto_now = True)
+class Content(ndb.Model):
+    path = ndb.StringProperty(required = True)
+    content = ndb.TextProperty(required = True)
+    created = ndb.DateTimeProperty(auto_now_add = True)
+    last_modified = ndb.DateTimeProperty(auto_now = True)
     
     @staticmethod
     def parent_key(path):
-        return db.Key.from_path('/root'+path, 'pages')
+	rootstr = '/root%s' %path
+	return ndb.Key(rootstr, 'pages')
     
     @classmethod
     def by_path(cls, path):
-        q = cls.all()
-        q.ancestor(cls.parent_key(path))
-        q.order("-created")
+        q= Content.query(ancestor=cls.parent_key(path))
+        q.order(-Content.created)
         return q
     
     @classmethod
@@ -389,8 +387,10 @@ class WikiPageHandler(Handler):
         if c:
             logging.error("The value of c is: "+ str(c))
             self.display_page(path, c)
-        else: 
-            self.edit_page(path)
+        else:
+			c = Content(path = path, content = 'No Tasks Today!')
+			self.display_page(path,c) 
+            #self.edit_page(path)
 	
 #HistoryHandler class
 class HistoryPageHandler(Handler):

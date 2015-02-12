@@ -2,13 +2,13 @@
 
 <html>
 <head>
-	<title>CCC</title>
+	<title>Easy Job Board</title>
 	<link href="/stylesheets/style.css" rel="stylesheet" type="text/css">
 </head>
 
 	<body>
     <a href="/" class="main-title">
-      CCC
+      Easy Job Board
     </a>
 	   
 	   <div class=login-area>
@@ -32,8 +32,8 @@
 		   		<tr>
 					<td>{{ c.last_modified.strftime("%c") }}</td>
 					<td>{{ c.content }}</td>
-					<td><a href="{{path}}?v={{c.key().id()}}" class="link">view</a></td>
-					<td><a href="/_edit{{path}}?v={{c.key().id()}}" class="link">edit</a></td>
+					<td><a href="{{path}}?v={{c.key.id()}}" class="link">view</a></td>
+					<td><a href="/_edit{{path}}?v={{c.key.id()}}" class="link">edit</a></td>
 				</tr>
 		   {% endfor %}
 	   </table>
