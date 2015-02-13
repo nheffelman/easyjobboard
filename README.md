@@ -1,3 +1,7 @@
+easy job board is a web app developed on appengine using python jinja and bootstrap
+
+some of its contents were originally forked from 
+
 Final Wiki Proj
 =============
 
